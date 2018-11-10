@@ -13,7 +13,7 @@ close all
 casedata = case300;
 
 %% 环境初始化
-addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接
+addpath ('./BSP', './Index', './Reference',''); % 函数链接
 run BSP_Initial.m
 print_title(PRINT_LENGTH, 1, '正在运行 IEEE %d',NUM.Bus)
 tic
