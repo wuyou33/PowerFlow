@@ -111,26 +111,27 @@ end % NL 大循环
 bus(:,[VM, VA]) = [U,(delta*180/pi)];  % 把电压和相角更新到bus矩阵中
 
 %% 节点功率数据 （只有平衡节点的PQ，PV节点的Q可以变化）
-% BLC节点加上 ΔP 和 ΔQ
 dS = -[dP,dQ]*baseMVA; % 注意有一个节点上接了两个发电机的情况(为什么是-号，我也不太清楚)
-gen_BLC = gen(:,GEN_BUS) == bus(PLC.BL,BUS_I);  % 找到gen中BLC节点的位置（行数）
-gen(gen_BLC,[PG, QG]) = gen(gen_BLC,[PG, QG]) + dS(PLC.BL,:); % 平衡节点的ΔP和ΔQ加上去 *
+
+% BLC节点加上 ΔP 和 ΔQ
+% gen_BLC = gen(:,GEN_BUS) == bus(PLC.BL,BUS_I);  % 找到gen中BLC节点的位置（行数）
+% gen(gen_BLC,[PG, QG]) = gen(gen_BLC,[PG, QG]) + dS(PLC.BL,:); % 平衡节点的ΔP和ΔQ加上去 *
+
 % PV节点加上 ΔQ
 idx_dQ = abs(dS(:,2)) > 1e-5;  % 找到dS中ΔQ的位置（包括PV节点和BLC节点）
-% [is,pos]=ismember(B,A) pos是B中元素如果在A中出现，出现的位置 (非logical)
-[~,gen_PV] = ismember(bus(PLC.PV,BUS_I),gen(:,GEN_BUS)); % 找到gen中PV节点的位置（行数）
+[~,gen_PV] = ismember(bus(PLC.PV,BUS_I),gen(:,GEN_BUS)); % 找到gen中PV节点的位置（行数） % [is,pos]=ismember(B,A) pos是B中元素如果在A中出现，出现的位置 (非logical)
 gen(gen_PV,QG) = gen(gen_PV,QG) + dS(PLC.PV, 2); % PV节点的ΔQ加上去
 
 %% 将电压转化为复数的形式u = e + jf
 u = U.*cos(delta) + 1j * U.*sin(delta);
-%% 计算平衡节点的功率和线路功率 （前面直接把ΔP和ΔQ加上去结果似乎是对的）
-% for j = 1:NUM.Bus
-%     Sn_temp(j) = u(NUM.Bus)*conj(Y(NUM.Bus,j))*conj(u(j)); % conj函数用于求共轭
-% end
-% Sn = sum(Sn_temp);
-% disp('*平衡节点功率 Sn');
-% disp(Sn);
-
+%% 计算平衡节点的功率和线路功率 （前面直接把ΔP和ΔQ加上去结果近似也是对的，稍有偏差）
+Sn_tem = zeros(1,14);
+for j = 1:NUM.Bus
+    Sn_tem(j) = u(PLC.BL)*conj(Y(PLC.BL,j))*conj(u(j)); % conj函数用于求共轭
+end
+Sn = sum(Sn_tem) * baseMVA;
+gen_BLC = gen(:,GEN_BUS) == bus(PLC.BL,BUS_I);  % 找到gen中BLC节点的位置（行数）
+gen(gen_BLC,[PG, QG]) = [real(Sn), imag(Sn)];   % 平衡节点的ΔP和ΔQ加上去
 %% 线路功率
 S = zeros(NUM.Bus); % 预分配内存
 for i=1:NUM.Bus  % S_ij 和 S_ji不一定相同，也就是矩阵不一定对称
