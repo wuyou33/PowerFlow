@@ -10,7 +10,7 @@
 clc
 clear
 close all
-casedata = case300;
+casedata = case14;
 
 %% 环境初始化
 addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接
@@ -114,7 +114,7 @@ bus(:,[VM, VA]) = [U,(delta*180/pi)];  % 把电压和相角更新到bus矩阵中
 % BLC节点加上 ΔP 和 ΔQ
 dS = -[dP,dQ]*baseMVA; % 注意有一个节点上接了两个发电机的情况(为什么是-号，我也不太清楚)
 gen_BLC = gen(:,GEN_BUS) == bus(PLC.BL,BUS_I);  % 找到gen中BLC节点的位置（行数）
-gen(gen_BLC,[PG, QG]) = gen(gen_BLC,[PG, QG]) + dS(PLC.BL); % 平衡节点的ΔP和ΔQ加上去 *
+gen(gen_BLC,[PG, QG]) = gen(gen_BLC,[PG, QG]) + dS(PLC.BL,:); % 平衡节点的ΔP和ΔQ加上去 *
 % PV节点加上 ΔQ
 idx_dQ = abs(dS(:,2)) > 1e-5;  % 找到dS中ΔQ的位置（包括PV节点和BLC节点）
 % [is,pos]=ismember(B,A) pos是B中元素如果在A中出现，出现的位置 (非logical)
