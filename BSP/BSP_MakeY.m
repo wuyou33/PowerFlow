@@ -28,7 +28,7 @@ NUM.Branch = size(branch,1);
 
 %% 支路导纳预分配内存
 Y = zeros(NUM.Bus);  % Y矩阵 预分配内存 
-y = zeros(NUM.Bus);  % 自导纳y0（对角线）和互导纳yij（非对角线），用于求线路功率
+% y = zeros(NUM.Bus);  % 自导纳y0（对角线）和互导纳yij（非对角线），用于求线路功率
 %% 变压器等效模型 （导纳矩阵形式）
 %% ─────x───────[ij]───────x─────     from---k:1-|yt|----to
 %%      |                  |
@@ -44,8 +44,9 @@ k = branch(:, TAP);      % 非标准变比
 for i = 1 : NUM.Bus         % BUS的自导纳
 %     p = bus(i,1);           % 对应的节点编号（位置） ........ 节点重新编号之后应该是可以去掉的
     Y(i,i) = (bus(i,GS) + 1j * bus(i,BS)) / baseMVA;  
-    y(i,i) = Y(i,i);
+%     y(i,i) = Y(i,i);
 end
+y = Y;  % 只考虑到bus矩阵的值的时候，二者相同
 
 for i = 1 : NUM.Branch       % Branch的自导纳
     if branch(i,BR_STATUS) == ENABLE   % 该母线正在投入运行中
@@ -60,13 +61,13 @@ for i = 1 : NUM.Branch       % Branch的自导纳
         % 导纳矩阵部分
         Y(p1,p1) = Y(p1,p1) + yl + 1j * branch(i,BR_B)/2 + yi;
         Y(p2,p2) = Y(p2,p2) + yl + 1j * branch(i,BR_B)/2 + yj;
-        Y(p1,p2) = Y(p1,p2)-yl;
+        Y(p1,p2) = Y(p1,p2) - yl;
         Y(p2,p1) = Y(p1,p2);
         % 导纳部分
-        y(p1,p1) = y(p1,p1) + yi;
-        y(p2,p2) = y(p2,p2) + yj;
-        y(p1,p2) = -yl;
-        y(p2,p1) = -yl;
+        y(p1,p1) = y(p1,p1) + 1j * branch(i,BR_B)/2 + yi; % might error *
+        y(p2,p2) = y(p2,p2) + 1j * branch(i,BR_B)/2 + yj;
+        y(p1,p2) = y(p1,p2) + yl;  % 若为0，则PF也为0
+        y(p2,p1) = y(p1,p2);       % 若为0，则PT也为0
     end
 end
 

@@ -138,11 +138,9 @@ gen(gen_BLC,[PG, QG]) = [real(Sn), imag(Sn)];   % 平衡节点的ΔP和ΔQ加上去
 
 %% 线路功率
 S = zeros(NUM.Bus); % 预分配内存 线路功率
-% u = ones(5,1);
 for i=1:NUM.Bus
     for j=1:NUM.Bus
-		S(i,j) = u(i) * ...
-            ( conj(u(i)) * conj(y(i,i))  +  ( conj(u(i)) - conj(u(j)) ) * conj(y(i,j)) );
+		S(i,j) = u(i)*( conj(u(i)) * conj(y(i,i)) + (conj(u(i)) - conj(u(j))) * conj(y(i,j)) );
     end
 end
 S = S * baseMVA;
@@ -168,7 +166,7 @@ for i = 1 : NUM.Branch
 %     loss(i) = dS( pt(i), pf(i) );
     loss(i) = S( pt(i), pf(i) ) + S( pf(i), pt(i) ); % loss 的 P、Q 应该和 branch 的 r，x 是成正比的
 end
-% loss = myget_losses(baseMVA, bus, branch);  % 用matpower的方法计算loss
+
 %% --------------------------------------------------------至此，所有计算结束
 %% 恢复节点编号
 bus(:,BUS_I) = Input_raw.bus(:,BUS_I);
