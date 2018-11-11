@@ -1,13 +1,13 @@
 format compact  
 %% 结束运算条件
-Accuracy = 1e-5;  % 收敛精度
-PF_MAX_IT = 5;   % 最大迭代次数
+Accuracy = 1e-5;    % 收敛精度
+PF_MAX_IT = 5;      % 最大迭代次数
 %% 输出控制符
-DISPLAY = 0;  % 显示中间调试过程
-UNDISPLAY = 0; % 默认不显示的内容：导纳矩阵
-FIGURE  = 0;  % 显示图像调试过程
+DISPLAY = 0;        % 显示中间调试过程
+UNDISPLAY = 0;      % 默认不显示的内容：导纳矩阵
+FIGURE  = 0;        % 显示图像调试过程
 PRINT_LENGTH = 78;
-ENABLE  = 1;  % gen和branch的运行状态
+ENABLE  = 1;        % gen和branch的运行状态
 DISABLE = 0;
 %% 数据导入： IEEE标准数据格式
 % Input=runpf(casedata); clc; 

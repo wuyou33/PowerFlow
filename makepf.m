@@ -11,16 +11,16 @@
 clc
 clear
 close all
-casedata = case5;
+
 
 %% 环境初始化
 addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接
+casedata = case5;
 run BSP_Initial.m
-print_title(PRINT_LENGTH, 1, '正在运行 IEEE %d',NUM.Bus)
+print_title(PRINT_LENGTH, 1, '正在运行 IEEE %d',NUM.Bus);
 
 tic
 %% 导纳矩阵生成
-% [Y, G, B] = BSP_MakeY(Input);
 [Y, G, B, y] = BSP_MakeY(Input);  % 形成导纳矩阵
 if UNDISPLAY  % 导纳矩阵显示
     print_title(PRINT_LENGTH,6,'导纳矩阵');
@@ -41,7 +41,7 @@ if DISPLAY  % 导纳矩阵误差值计算和显示
     end
 end
 
-%% 节点注入功率 Pre Value ---------------------每一个节点的Sis，和手算结果一致
+%% 节点注入功率 Pre Value 
 % 节点重新编号后的版本，也就是母线的节点编号是连续的，比如1~300
 Pis = -bus(:, PD);  % 负荷节点 消耗功率为负数 (MW, MVar)
 Qis = -bus(:, QD);
@@ -146,17 +146,17 @@ gen(gen_BLC,[PG, QG]) = [real(Sn), imag(Sn)];   % 平衡节点的ΔP和ΔQ加上去
 % end
 % S = S * baseMVA;
 
-I1 = zeros(NUM.Bus);
-I2 = zeros(NUM.Bus);
-S1 = zeros(NUM.Bus);
+I1 = zeros(NUM.Bus);  % 串联那部分电流
+I2 = zeros(NUM.Bus);  % 并联的部分电流
+S1 = zeros(NUM.Bus); 
 S2 = zeros(NUM.Bus);
 for i = 1:NUM.Bus
     for j = 1:NUM.Bus
         I1(i,j) = ( u(i) - u(j) ) * y(i,j);
         I2(i,j) = u(i) * y(i,i);
-        S1(i,j) = u(i) * conj(I1(i,j)) * baseMVA; % 串联那部分
-        S2(i,j) = u(i) * conj(I2(i,j)) * baseMVA; % 并联的部分
-%         dS(i,j) = I1(i,j)^2 * y(i,j)   * baseMVA;
+        S1(i,j) = u(i) * conj(I1(i,j)) * baseMVA; 
+        S2(i,j) = u(i) * conj(I2(i,j)) * baseMVA;
+%         dS(i,j) = I1(i,j)^2 / y(i,j)   * baseMVA;
     end
 end
 S = S1 + S2;
@@ -180,7 +180,7 @@ for i = 1 : NUM.Branch
     branch(i,PT) = real( S1( pt(i), pf(i) ) );
     branch(i,QT) = imag( S1( pt(i), pf(i) ) );
 %     loss(i) = dS( pt(i), pf(i) );
-    loss(i) = S1( pt(i), pf(i) ) + S1( pf(i), pt(i) ); % loss 的 P、Q 应该和 branch 的 r，x 是成正比的
+    loss(i) = S1( pt(i), pf(i) ) + S1( pf(i), pt(i) ); % matpower中 loss 的 P、Q 应该和 branch 的 r，x 是成正比的
 end
 % loss = myget_losses(baseMVA, bus, branch);  % 用matpower的方法计算loss
 
