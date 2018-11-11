@@ -17,8 +17,8 @@ casedata = case5;
 addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接
 run BSP_Initial.m
 print_title(PRINT_LENGTH, 1, '正在运行 IEEE %d',NUM.Bus)
-
 tic
+
 %% 导纳矩阵生成
 % [Y, G, B] = BSP_MakeY(Input);
 [Y, G, B, y] = BSP_MakeY(Input);  % 形成导纳矩阵
@@ -137,7 +137,7 @@ gen_BLC = gen(:,GEN_BUS) == bus(PLC.BL,BUS_I);  % 找到gen中BLC节点的位置（行数）
 gen(gen_BLC,[PG, QG]) = [real(Sn), imag(Sn)];   % 平衡节点的ΔP和ΔQ加上去
 
 %% 线路功率
-% S = zeros(NUM.Bus); % 预分配内存 线路功率
+S = zeros(NUM.Bus); % 预分配内存 线路功率
 % for i=1:NUM.Bus
 %     for j=1:NUM.Bus
 % 		S(i,j) = u(i) * ...
@@ -145,7 +145,6 @@ gen(gen_BLC,[PG, QG]) = [real(Sn), imag(Sn)];   % 平衡节点的ΔP和ΔQ加上去
 %     end
 % end
 % S = S * baseMVA;
-
 I1 = zeros(NUM.Bus);
 I2 = zeros(NUM.Bus);
 S1 = zeros(NUM.Bus);
@@ -154,13 +153,12 @@ for i = 1:NUM.Bus
     for j = 1:NUM.Bus
         I1(i,j) = ( u(i) - u(j) ) * y(i,j);
         I2(i,j) = u(i) * y(i,i);
-        S1(i,j) = u(i) * conj(I1(i,j)) * baseMVA; % 串联那部分
-        S2(i,j) = u(i) * conj(I2(i,j)) * baseMVA; % 并联的部分
-%         dS(i,j) = I1(i,j)^2 * y(i,j)   * baseMVA;
+        S1(i,j) = u(i) * conj(I1(i,j)) * baseMVA;
+        S2(i,j) = u(i) * conj(I2(i,j)) * baseMVA;
+        dS(i,j) = I1(i,j)^2 * y(i,j)  * baseMVA;
     end
 end
-S = S1 + S2;
-
+S = baseMVA*(S1 + S2);
 %% 线路损耗 (放在了下一节中运算loss)
 % for i=1:NUM.Bus  % S_ij 和 S_ji不一定相同，也就是矩阵不一定对称
 %     for j=1:NUM.Bus
@@ -175,12 +173,12 @@ pt = branch(:,T_BUS);  % 中止母线
 branch = [branch,zeros(NUM.Branch, 4)]; % 增加四列存放线路功率
 loss = zeros(NUM.Branch, 1);
 for i = 1 : NUM.Branch
-    branch(i,PF) = real( S1( pf(i), pt(i) ) );
-    branch(i,QF) = imag( S1( pf(i), pt(i) ) );
-    branch(i,PT) = real( S1( pt(i), pf(i) ) );
-    branch(i,QT) = imag( S1( pt(i), pf(i) ) );
-%     loss(i) = dS( pt(i), pf(i) );
-    loss(i) = S1( pt(i), pf(i) ) + S1( pf(i), pt(i) ); % loss 的 P、Q 应该和 branch 的 r，x 是成正比的
+    branch(i,PF) = real( S( pf(i), pt(i) ) );
+    branch(i,QF) = imag( S( pf(i), pt(i) ) );
+    branch(i,PT) = real( S( pt(i), pf(i) ) );
+    branch(i,QT) = imag( S( pt(i), pf(i) ) );
+    loss(i) = dS( pt(i), pf(i) );
+%     loss(i) = S( pt(i), pf(i) ) + S( pf(i), pt(i) ); % loss 的 P、Q 应该和 branch 的 r，x 是成正比的
 end
 % loss = myget_losses(baseMVA, bus, branch);  % 用matpower的方法计算loss
 
