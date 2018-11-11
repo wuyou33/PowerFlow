@@ -67,7 +67,7 @@ fprintf('\n--------------------------------------------------------------\n');
 
 %% branch data
 print_title(PRINT_LENGTH,2,'Branch Data');
-fprintf(  '-----  -----  -----  --------  --------  --------  --------  --------  --------');
+fprintf(  '-----  ------------  ------------------  ------------------  ------------------');
 fprintf('\nBrnch   From   To    From Bus Injection   To Bus Injection     Loss (I^2 * Z)  ');
 fprintf('\n  #     Bus    Bus    P (MW)   Q (MVAr)   P (MW)   Q (MVAr)   P (MW)   Q (MVAr)');
 fprintf('\n-----  -----  -----  --------  --------  --------  --------  --------  --------');
@@ -80,4 +80,4 @@ fprintf('\n%4d%7d%7d%10.2f%10.2f%10.2f%10.2f%10.3f%10.2f', ...
 fprintf('\n                                                             --------  --------');
 fprintf('\n                                                    Total:%10.3f%10.2f', ...
         sum(real(loss)), sum(imag(loss)));
-fprintf('\n');
+fprintf('\n-------------------------------------------------------------------------------\n');

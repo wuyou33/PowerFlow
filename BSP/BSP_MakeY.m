@@ -41,17 +41,18 @@ t = branch(:, TAP) == 0; % 变压器支路所 不在 的行数
 branch(t, TAP) = 1;      % 非标准变比, 把0补1
 k = branch(:, TAP);      % 非标准变比
 
-for i = 1 : NUM.Bus         % BUS的自导纳
-%     p = bus(i,1);           % 对应的节点编号（位置） ........ 节点重新编号之后应该是可以去掉的
-    Y(i,i) = (bus(i,GS) + 1j * bus(i,BS)) / baseMVA;  
-    y(i,i) = Y(i,i);
-end
+% for i = 1 : NUM.Bus         % BUS的自导纳
+% %     p = bus(i,1);           % 对应的节点编号（位置） ........ 节点重新编号之后应该是可以去掉的
+%     Y(i,i) = (bus(i,GS) + 1j * bus(i,BS)) / baseMVA;  
+% end
+Y = diag( (bus(:,GS) + 1j * bus(:,BS)) / baseMVA ); 
+
+% y = Y;  % 只考虑到bus矩阵的值的时候，二者相同 ...... 不包括这一个导纳
 
 for i = 1 : NUM.Branch       % Branch的自导纳
     if branch(i,BR_STATUS) == ENABLE   % 该母线正在投入运行中
         p1 = branch(i,F_BUS);  % 首节点
         p2 = branch(i,T_BUS);  % 末节点
-        
         yt = 1 / ( branch(i, BR_R) + 1j * branch(i, BR_X));  % 串联初始导纳
         % 变压器模型
         yl = yt / k(i);
@@ -60,13 +61,13 @@ for i = 1 : NUM.Branch       % Branch的自导纳
         % 导纳矩阵部分
         Y(p1,p1) = Y(p1,p1) + yl + 1j * branch(i,BR_B)/2 + yi;
         Y(p2,p2) = Y(p2,p2) + yl + 1j * branch(i,BR_B)/2 + yj;
-        Y(p1,p2) = Y(p1,p2)-yl;
+        Y(p1,p2) = Y(p1,p2) - yl;
         Y(p2,p1) = Y(p1,p2);
         % 导纳部分
-        y(p1,p1) = y(p1,p1) + yi;
-        y(p2,p2) = y(p2,p2) + yj;
-        y(p1,p2) = -yl;
-        y(p2,p1) = -yl;
+        y(p1,p1) = y(p1,p1) + 1j * branch(i,BR_B)/2 + yi; % might error *
+        y(p2,p2) = y(p2,p2) + 1j * branch(i,BR_B)/2 + yj;
+        y(p1,p2) = y(p1,p2) + yl;  % 若为0，则PF也为0
+        y(p2,p1) = y(p1,p2);       % 若为0，则PT也为0
     end
 end
 
