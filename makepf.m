@@ -169,6 +169,7 @@ for i = 1 : NUM.Branch
     loss(i) = S( pt(i), pf(i) ) + S( pf(i), pt(i) ); % loss 的 P、Q 应该和 branch 的 r，x 是成正比的
 end
 % loss = myget_losses(baseMVA, bus, branch);  % 用matpower的方法计算loss
+
 %% --------------------------------------------------------至此，所有计算结束
 %% 恢复节点编号
 bus(:,BUS_I) = Input_raw.bus(:,BUS_I);
