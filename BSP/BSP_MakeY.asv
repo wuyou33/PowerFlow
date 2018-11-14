@@ -47,12 +47,10 @@ branch_j = branch(:,T_BUS);  % 末节点
 
 % 变压器模型
 yt = 1 ./ ( branch(:, BR_R) + 1j * branch(:, BR_X));  % 串联初始导纳
-t = branch(:, TAP) == 0;                              % 没有 变压器 的支路的 行数
-branch(t, TAP) = 1;                                   % 非标准变比, 把0补1(0表示没有变压器，相当于变比为1)
-
-Tap = branch(:, TAP);
-Rad = (pi/180) * branch(:, SHIFT);
-k = Tap .* cos(Rad) + 1j * Tap .* sin(Rad);     % 非标准变比(加入移相器)
+t = branch(:, TAP) == 0;                              % 变压器支路 不在 的行数
+branch(t, TAP) = 1;                                   % 非标准变比, 把0补1
+k = branch(:, TAP) .* cos(branch(:, SHIFT)) + ...
+    1j * branch(:, TAP) .* sin(branch(:, SHIFT));     % 非标准变比(加入移相器)
 
 yij = yt ./ conj(k);
 yji = yt ./ k;
@@ -61,8 +59,8 @@ yj = ( k-1 ) ./ k .* yt;
 
 branch_vii = yij + 1j * branch(:,BR_B)/2 + yi;
 branch_vjj = yji + 1j * branch(:,BR_B)/2 + yj;
-branch_vij = - yij;
-branch_vji = - yji;
+branch_vij = - yl;
+branch_vji = branch_vij;
 
 %% 合成导纳矩阵
 s_i = [bus_i; branch_i;   branch_j;   branch_i;   branch_j];

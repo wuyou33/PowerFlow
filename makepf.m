@@ -6,7 +6,7 @@ close all
     % ┌ ΔP ┐  _   ┌ H N ┐ ┌  Δδ  ┐
     % └ ΔQ ┘  ─   └ K L ┘ └ ΔU/U ┘ 
 %% 环境初始化
-casedata = case300;
+casedata = case2383wp;
 addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接
 run BSP_Initial.m
 print_title(PRINT_LENGTH, 1, '正在运行 IEEE %d',NUM.Bus);
@@ -55,8 +55,8 @@ for PF_N_IT = 1:PF_MAX_IT % 最大迭代次数
   
     %% 雅可比矩阵
 %     tic
-    [ NL.Jacobian ] = BSP_Jacobian( U,delta,G,B,Pi,Qi, PLC,NUM ); % 2383 1.6s
-%     [ NL.Jacobian ] = dS_dV(Y, u, PLC);  % 直接用复数的方法求Jacobian矩阵的方法 2383 0.006s  
+%     [ NL.Jacobian ] = BSP_Jacobian( U,delta,G,B,Pi,Qi, PLC,NUM ); % 2383 1.6s
+    [ NL.Jacobian ] = dS_dV(Y, u, PLC);  % 直接用复数的方法求Jacobian矩阵的方法 2383 0.006s  
 %     fprintf('Jacobian time %.4f\n',toc);
     %% 牛拉法 核心公式 
     NL.x = - NL.Jacobian \ NL.fx;  % 2383 0.01s
@@ -167,8 +167,8 @@ if FIGURE  % 误差变化曲线
 end
 
 % load('run.mat');
-% RUN = runpf(casedata);clc;
-% fprintf('幅值误差: %.3e\n',max(max(abs(bus(:,8)-RUN.bus(:,8)))));
-% fprintf('相角误差: %.3e\n',max(max(abs(bus(:,9)-RUN.bus(:,9)))));
+RUN = runpf(casedata);clc;
+fprintf('幅值误差: %.3e\n',max(max(abs(bus(:,8)-RUN.bus(:,8)))));
+fprintf('相角误差: %.3e\n',max(max(abs(bus(:,9)-RUN.bus(:,9)))));
 fprintf('导纳矩阵误差: %.3e\n',full(ERR_MAX));
 fprintf('程序耗时: %.3fs\n',time);

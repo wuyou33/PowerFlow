@@ -1,0 +1,29 @@
+MATPOWER Version 7.0b1, 31-Oct-2018 -- AC Power Flow (Newton)
+
+Newton's method power flow converged in 6 iterations.
+
+Converged in 0.21 seconds
+================================================================================
+|     System Summary                                                           |
+================================================================================
+
+How many?                How much?              P (MW)            Q (MVAr)
+---------------------    -------------------  -------------  -----------------
+Buses           2383     Total Gen Capacity   29593.7          -Inf to Inf
+Generators       327     On-line Capacity     29593.7          -Inf to Inf
+Committed Gens   327     Generation (actual)  25284.6            8811.6
+Loads           1826     Load                 24558.4            8143.9
+  Fixed         1826       Fixed              24558.4            8143.9
+  Dispatchable     0       Dispatchable          -0.0 of -0.0      -0.0
+Shunts             0     Shunt (inj)             -0.0               0.0
+Branches        2896     Losses (I^2 * Z)       726.23           5067.27
+Transformers     170     Branch Charging (inj)     -             4399.6
+Inter-ties        13     Total Inter-tie Flow  1738.9            1017.9
+Areas              4
+
+                          Minimum                      Maximum
+                 -------------------------  --------------------------------
+Voltage Magnitude   0.894 p.u. @ bus 1905       1.063 p.u. @ bus 2378
+Voltage Angle     -60.51 deg   @ bus 1858       3.96 deg   @ bus 110 
+P Losses (I^2*R)             -                 19.35 MW    @ line 138-67
+Q Losses (I^2*X)             -                217.20 MVAr  @ line 18-15
