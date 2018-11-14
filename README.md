@@ -1,5 +1,5 @@
-# Power Flow - Newton rapson method
-Author: Kang-S <sunkang.real@qq.com>
+# Power Flow - Newton Rapson method
+Author: Kang-S <https://github.com/Kang-S>
 
 ------
 ## What is this?
