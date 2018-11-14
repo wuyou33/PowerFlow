@@ -22,12 +22,10 @@ K = + U(i).*U(j).*(G.*cos(delta(i)-delta(j))+B.*sin(delta(i)-delta(j)));
 L = - U(i).*U(j).*(G.*sin(delta(i)-delta(j))-B.*cos(delta(i)-delta(j)));
 
 %% i==j时 对角元素替代了原来的无效的非对角元素
-i = 1 : NUM.Bus;
-H(logical(eye(NUM.Bus))) =   U(i).^2 .* diag(B) + Qi(i);
-N(logical(eye(NUM.Bus))) = - U(i).^2 .* diag(G) - Pi(i);
-K(logical(eye(NUM.Bus))) =   U(i).^2 .* diag(G) - Pi(i);
-L(logical(eye(NUM.Bus))) =   U(i).^2 .* diag(B) - Qi(i);
-
+H(logical(eye(NUM.Bus))) =   U.^2 .* diag(B) + Qi;
+N(logical(eye(NUM.Bus))) = - U.^2 .* diag(G) - Pi;
+K(logical(eye(NUM.Bus))) =   U.^2 .* diag(G) - Pi;
+L(logical(eye(NUM.Bus))) =   U.^2 .* diag(B) - Qi;
 % -----------------------------------------至此，对每一个节点都算了其 H N K L
 % 接下来，要根据各个节点的类型，顺序重排：PQ_BUS PV_BUS
 %% HN KL 矩阵重新排序

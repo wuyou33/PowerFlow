@@ -6,7 +6,7 @@ close all
     % ┌ ΔP ┐  _   ┌ H N ┐ ┌  Δδ  ┐
     % └ ΔQ ┘  ─   └ K L ┘ └ ΔU/U ┘ 
 %% 环境初始化
-casedata = case2383wp;
+casedata = case300;
 addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接
 run BSP_Initial.m
 print_title(PRINT_LENGTH, 1, '正在运行 IEEE %d',NUM.Bus);
