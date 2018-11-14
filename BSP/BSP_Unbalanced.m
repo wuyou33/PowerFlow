@@ -1,4 +1,4 @@
-function [ NL_fx,dP,dQ,Pi,Qi ] = BSP_Unbalanced( baseMVA,Pis,Qis,U,Y,delta, PLC )
+function [ NL_fx,dP,dQ,Pi,Qi ] = BSP_Unbalanced( baseMVA,Pis,Qis,u,Y, PLC )
 %% BSP_Unbalanced 计算功率不平衡量
 % OUTPUT:均为 单列矩阵
 %        NL_fx : 牛拉法公式中的fx，由dP和dQ组合而成
@@ -15,8 +15,8 @@ function [ NL_fx,dP,dQ,Pi,Qi ] = BSP_Unbalanced( baseMVA,Pis,Qis,U,Y,delta, PLC 
 %        PLC,NUM: 索引值 详见 @BSP_Initial.m
 % TEMP TEST: 临时调试代码
 
-%% 将电压转化为复数的形式u = e + jf
-u = U.*cos(delta) + 1j * U.*sin(delta); 
+% %% 将电压转化为复数的形式u = e + jf
+% u = U.*cos(delta) + 1j * U.*sin(delta); 
 %% 功率不平衡量
 Si = u .* conj(Y * u);
 Pi = real(Si);

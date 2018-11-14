@@ -1,7 +1,7 @@
 format compact  
 %% 结束运算条件
 Accuracy = 1e-5;    % 收敛精度
-PF_MAX_IT = 5;      % 最大迭代次数
+PF_MAX_IT = 10;      % 最大迭代次数
 %% 输出控制符
 DISPLAY = 0;        % 显示中间调试过程
 UNDISPLAY = 0;      % 默认不显示的内容：导纳矩阵
@@ -67,4 +67,5 @@ end
 U = bus(:, VM);      % 母线电压 (p.u.)                            
 delta = pi/180 * bus(:, VA);  % 母线电压相角(弧度制：MATLAB的三角函数识别弧度制)
 NL.xInit = [delta(logical(PLC.PQ + PLC.PV)); U(PLC.PQ)]; % 组成Jacobian矩阵的x
-
+% 将电压转化为复数的形式u = e + jf
+u = U.*cos(delta) + 1j * U.*sin(delta);

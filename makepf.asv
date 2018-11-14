@@ -59,8 +59,9 @@ for PF_N_IT = 1:PF_MAX_IT % 最大迭代次数
 %     [ NL.Jacobian ] = dS_dV(Y, u, PLC);  % 直接用复数的方法求Jacobian矩阵的方法 2383 0.006s  
 %     fprintf('Jacobian time %.4f\n',toc);
     %% 牛拉法 核心公式 
-    NL.x = - NL.Jacobian \ NL.fx;  % 2383 0.01s
-
+    tic
+    NL.x = - NL.Jacobian \ NL.fx;
+    toc
     %% 电压状态更新
     [u,U,delta] = BSP_Updata( U,delta,NL.x,PLC,NUM ); % 2383 0.0003s
     
@@ -99,6 +100,7 @@ for PF_N_IT = 1:PF_MAX_IT % 最大迭代次数
             break;
     end
 end % NL 大循环
+
 time = toc;
 %% 节点电压数据
 bus(:,[VM, VA]) = [U,(delta*180/pi)];  % 把电压和相角更新到bus矩阵中
@@ -171,4 +173,4 @@ end
 % fprintf('幅值误差: %.3e\n',max(max(abs(bus(:,8)-RUN.bus(:,8)))));
 % fprintf('相角误差: %.3e\n',max(max(abs(bus(:,9)-RUN.bus(:,9)))));
 fprintf('导纳矩阵误差: %.3e\n',full(ERR_MAX));
-fprintf('程序耗时: %.3fs\n',time);
+fprintf('程序耗时: %.3fs\n',toc);
