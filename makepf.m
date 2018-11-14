@@ -1,35 +1,29 @@
-% function makepf(casedata)
-% %makepf 主程序：相当于MATPOWER的runpf
-% if nargin < 1
-%     clear
-%     close all
-%     casedata = case0;
-% end
-% % vision 2.0: 加入节点重新编号
-
 %% TEMP TEST: 临时调试代码
 clc
 clear
 close all
 
-
 %% 环境初始化
+casedata = case57;
 addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接
-casedata = case5;
 run BSP_Initial.m
 print_title(PRINT_LENGTH, 1, '正在运行 IEEE %d',NUM.Bus);
 
 tic
 %% 导纳矩阵生成
-[Y, G, B, y] = BSP_MakeY(Input);  % 形成导纳矩阵
+[Y, G, B] = BSP_MakeY(Input);  % 形成导纳矩阵
+% toc
+% tic
+% Y  = makeYbus(Input);
+% toc
 if UNDISPLAY  % 导纳矩阵显示
     print_title(PRINT_LENGTH,6,'导纳矩阵');
     disp(Y);
 end
-
+ERR_MAX = max(max(abs( Y - makeYbus(baseMVA, bus, branch) )));
 %% 判断导纳矩阵误差值
 if DISPLAY  % 导纳矩阵误差值计算和显示
-    ERR_MAX = max(max(abs( Y - full(makeYbus(baseMVA, bus, branch)) )));  % 误差值
+    ERR_MAX = max(max(abs( Y - makeYbus(baseMVA, bus, branch) )));  % 误差值
     print_title(PRINT_LENGTH,5,'Y误差：%e', ERR_MAX)
 %     fprintf("* 导纳矩阵最大误差值：%e\n\n", ERR_MAX);
     % 显示误差图像
@@ -41,17 +35,20 @@ if DISPLAY  % 导纳矩阵误差值计算和显示
     end
 end
 
-%% 节点注入功率 Pre Value 
-% 节点重新编号后的版本，也就是母线的节点编号是连续的，比如1~300
-Pis = -bus(:, PD);  % 负荷节点 消耗功率为负数 (MW, MVar)
-Qis = -bus(:, QD);
-for i = 1: NUM.Gen   % 每个节点加上发电机的 输入功率 (没有分节点的类型)
-    Pis(gen(i, GEN_BUS)) = Pis(gen(i, GEN_BUS)) + gen(i, PG);
-    Qis(gen(i, GEN_BUS)) = Qis(gen(i, GEN_BUS)) + gen(i, QG);
-end
+%% 节点注入功率 Sis = Pis + j*Qis
+% 负荷  消耗功率为负数 (MW, MVar)
+Sis_ib = (1 : NUM.Bus).';           Sis_jb = ones(NUM.Bus,1);
+Pis_vb = -bus(:, PD);               Qis_vb = -bus(:, QD);
+% 发电机 产生功率为正数 (MW, MVar)
+Sis_ig = gen(:, GEN_BUS);           Sis_jg = ones(NUM.Gen, 1);
+Pis_vg = gen(:, PG);                Qis_vg = gen(:, QG);
+% 合成
+Sis_i = [Sis_ib; Sis_ig];           Sis_j = [Sis_jb; Sis_jg];
+Pis_v = [Pis_vb; Pis_vg];           Qis_v = [Qis_vb; Qis_vg];
+Pis = sparse(Sis_i, Sis_j, Pis_v);  Qis = sparse(Sis_i, Sis_j, Qis_v);
 
 %% 功率不平衡量 Calculate Value
-[ NL.fx,dP,dQ,Pi,Qi ] = BSP_Unbalanced( baseMVA,Pis,Qis,U,G,B,delta, PLC,NUM );
+[ NL.fx,dP,dQ,Pi,Qi ] = BSP_Unbalanced( baseMVA,Pis,Qis,U,Y,delta, PLC );
 if DISPLAY  % 显示功率不平衡量
     print_title(PRINT_LENGTH,6,'功率不平衡量');
     disp(table(dP,dQ,Pi,Qi));
@@ -65,9 +62,11 @@ end
 
 %% 大循环
 for PF_N_IT = 1:PF_MAX_IT % 最大迭代次数 
+    %% 将电压转化为复数的形式u = e + jf
+    u = U.*cos(delta) + 1j * U.*sin(delta);
     %% 雅可比矩阵
     [ NL.Jacobian ] = BSP_Jacobian( U,delta,G,B,Pi,Qi, PLC,NUM );
-%     [NL.Jacobian] = dS_dV(Y, U, PLC);  % matpower求Jacobian矩阵的方法    
+%     [ NL.Jacobian ] = dS_dV(Y, u, PLC);  % matpower求Jacobian矩阵的方法     
     %% 牛拉法 核心公式
     % ┌ ΔP ┐  _   ┌ H N ┐ ┌  Δδ  ┐
     % └ ΔQ ┘  ─   └ K L ┘ └ ΔU/U ┘    
@@ -75,7 +74,7 @@ for PF_N_IT = 1:PF_MAX_IT % 最大迭代次数
     %% 电压状态更新
     [U,delta] = BSP_Updata( U,delta,NL.x,PLC,NUM );   
     %% 功率不平衡量
-    [ NL.fx,dP,dQ,Pi,Qi ] = BSP_Unbalanced( baseMVA,Pis,Qis,U,G,B,delta, PLC,NUM );
+    [ NL.fx,dP,dQ,Pi,Qi ] = BSP_Unbalanced( baseMVA,Pis,Qis,U,Y,delta, PLC );
     %% 中间过程打印输出
     if FIGURE   % 误差数据记录
         draw = [draw,max(abs(NL.fx))];
@@ -109,72 +108,55 @@ for PF_N_IT = 1:PF_MAX_IT % 最大迭代次数
     end
 end % NL 大循环
 
+time = toc;
 %% 节点电压数据
 bus(:,[VM, VA]) = [U,(delta*180/pi)];  % 把电压和相角更新到bus矩阵中
 
-%% 节点功率数据 （只有平衡节点的PQ，PV节点的Q可以变化）
-dS = -[dP,dQ]*baseMVA; % 注意有一个节点上接了两个发电机的情况(为什么是-号，我也不太清楚)
-
-% BLC节点加上 ΔP 和 ΔQ
-% gen_BLC = gen(:,GEN_BUS) == bus(PLC.BL,BUS_I);  % 找到gen中BLC节点的位置（行数）
-% gen(gen_BLC,[PG, QG]) = gen(gen_BLC,[PG, QG]) + dS(PLC.BL,:); % 平衡节点的ΔP和ΔQ加上去 *
-
+%% PV节点 功率 （只有 平衡节点 的 P和Q，PV节点 的 Q 可以变化）
+dS = -[dP,dQ]*baseMVA; % 注意有一个节点上接了两个发电机的情况
 % PV节点加上 ΔQ
-idx_dQ = abs(dS(:,2)) > 1e-5;  % 找到dS中ΔQ的位置（包括PV节点和BLC节点）
 [~,gen_PV] = ismember(bus(PLC.PV,BUS_I),gen(:,GEN_BUS)); % 找到gen中PV节点的位置（行数） % [is,pos]=ismember(B,A) pos是B中元素如果在A中出现，出现的位置 (非logical)
 gen(gen_PV,QG) = gen(gen_PV,QG) + dS(PLC.PV, 2); % PV节点的ΔQ加上去
 
 %% 将电压转化为复数的形式u = e + jf
 u = U.*cos(delta) + 1j * U.*sin(delta); % 已经验证正确
 
-%% 计算平衡节点的功率和线路功率 （前面直接把ΔP和ΔQ加上去结果近似也是对的，稍有偏差）
-Sn_tem = zeros(1,14);
-for j = 1:NUM.Bus
-    Sn_tem(j) = u(PLC.BL)*conj(Y(PLC.BL,j))*conj(u(j)); % conj函数用于求共轭
-end
-Sn = sum(Sn_tem) * baseMVA;
+%% 平衡节点 功率
+Sn = sum( u(PLC.BL) .* Y(PLC.BL,:)' .* conj(u) ) * baseMVA;
 gen_BLC = gen(:,GEN_BUS) == bus(PLC.BL,BUS_I);  % 找到gen中BLC节点的位置（行数）
 gen(gen_BLC,[PG, QG]) = [real(Sn), imag(Sn)];   % 平衡节点的ΔP和ΔQ加上去
 
 %% 线路功率
-% S = zeros(NUM.Bus); % 预分配内存 线路功率
-% for i=1:NUM.Bus
-%     for j=1:NUM.Bus
-% 		S(i,j) = u(i) * ...
-%             ( conj(u(i)) * conj(y(i,i))  +  ( conj(u(i)) - conj(u(j)) ) * conj(y(i,j)) );
+
+% I1 = zeros(NUM.Bus);  % 串联那部分电流
+% I2 = zeros(NUM.Bus);  % 并联的部分电流
+% S1 = zeros(NUM.Bus); 
+% S2 = zeros(NUM.Bus);
+% for i = 1:NUM.Bus
+%     for j = 1:NUM.Bus
+%         I1(i,j) = ( u(i) - u(j) ) * y(i,j);
+%         I2(i,j) = u(i) * y(i,i);
+%         S1(i,j) = u(i) * conj(I1(i,j)) * baseMVA; 
+%         S2(i,j) = u(i) * conj(I2(i,j)) * baseMVA;
+% %         dS(i,j) = I1(i,j)^2 / y(i,j)   * baseMVA;
 %     end
 % end
-% S = S * baseMVA;
-
-I1 = zeros(NUM.Bus);  % 串联那部分电流
-I2 = zeros(NUM.Bus);  % 并联的部分电流
-S1 = zeros(NUM.Bus); 
-S2 = zeros(NUM.Bus);
-for i = 1:NUM.Bus
-    for j = 1:NUM.Bus
-        I1(i,j) = ( u(i) - u(j) ) * y(i,j);
-        I2(i,j) = u(i) * y(i,i);
-        S1(i,j) = u(i) * conj(I1(i,j)) * baseMVA; 
-        S2(i,j) = u(i) * conj(I2(i,j)) * baseMVA;
-%         dS(i,j) = I1(i,j)^2 / y(i,j)   * baseMVA;
-    end
-end
-S = S1 + S2;
+% S = S1 + S2;
 
 %% 线路损耗 (放在了下一节中运算loss)
 %% 将 线路功率 和 损耗 封装起来
-pf = branch(:,F_BUS);  % 起始母线
-pt = branch(:,T_BUS);  % 中止母线
-branch = [branch,zeros(NUM.Branch, 4)]; % 增加四列存放线路功率
-loss = zeros(NUM.Branch, 1);
-for i = 1 : NUM.Branch
-    branch(i,PF) = real( S1( pf(i), pt(i) ) );
-    branch(i,QF) = imag( S1( pf(i), pt(i) ) );
-    branch(i,PT) = real( S1( pt(i), pf(i) ) );
-    branch(i,QT) = imag( S1( pt(i), pf(i) ) );
-%     loss(i) = dS( pt(i), pf(i) );
-    loss(i) = S1( pt(i), pf(i) ) + S1( pf(i), pt(i) ); % matpower中 loss 的 P、Q 应该和 branch 的 r，x 是成正比的
-end
+% pf = branch(:,F_BUS);  % 起始母线
+% pt = branch(:,T_BUS);  % 中止母线
+% branch = [branch,zeros(NUM.Branch, 4)]; % 增加四列存放线路功率
+% loss = zeros(NUM.Branch, 1);
+% for i = 1 : NUM.Branch
+%     branch(i,PF) = real( S1( pf(i), pt(i) ) );
+%     branch(i,QF) = imag( S1( pf(i), pt(i) ) );
+%     branch(i,PT) = real( S1( pt(i), pf(i) ) );
+%     branch(i,QT) = imag( S1( pt(i), pf(i) ) );
+% %     loss(i) = dS( pt(i), pf(i) );
+%     loss(i) = S1( pt(i), pf(i) ) + S1( pf(i), pt(i) ); % matpower中 loss 的 P、Q 应该和 branch 的 r，x 是成正比的
+% end
 % loss = myget_losses(baseMVA, bus, branch);  % 用matpower的方法计算loss
 
 %% --------------------------------------------------------至此，所有计算结束
@@ -184,13 +166,19 @@ gen(:,GEN_BUS) = Input_raw.gen(:,GEN_BUS);
 branch(:,[F_BUS,T_BUS]) = Input_raw.branch(:,[F_BUS,T_BUS]);
 
 %% 判断收敛性，结果打印
-BSP_print(bus,gen,branch,loss,NL,Type,NUM,PRINT_LENGTH,PF_N_IT,Accuracy); % 收敛性判断以及结果输出
+BSP_print(bus,gen,NL,Type,NUM,PRINT_LENGTH,PF_N_IT,Accuracy); % 收敛性判断以及结果输出
 
 %% 
-toc
 if FIGURE  % 误差变化曲线
     figure('Name','误差变化曲线');
     plot(draw);  % 绘制误差变化曲线
     xlabel('Time');
     ylabel('Per-unit value');
 end
+
+% load('run.mat');
+% RUN = runpf(casedata);clc;
+% fprintf('幅值误差: %.3e\n',max(max(abs(bus(:,8)-RUN.bus(:,8)))));
+% fprintf('相角误差: %.3e\n',max(max(abs(bus(:,9)-RUN.bus(:,9)))));
+fprintf('导纳矩阵误差: %.3e\n',full(ERR_MAX));
+fprintf('程序耗时: %.3fs\n',toc);
