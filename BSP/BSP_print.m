@@ -1,4 +1,5 @@
-function BSP_print(bus,gen,branch,loss,NL,Type,NUM,PRINT_LENGTH,PF_N_IT,Accuracy)
+function BSP_print(bus,gen,NL,Type,NUM,PRINT_LENGTH,PF_N_IT,Accuracy)
+% function BSP_print(bus,gen,branch,loss,NL,Type,NUM,PRINT_LENGTH,PF_N_IT,Accuracy)
 %          printpf(baseMVA, bus, gen, branch, f, success, et, fd, mpopt)
 % BSP_print: 用于打印潮流计算的结果
 % OUTPUT: 无（通过打印输出，没有输出参数）
@@ -66,18 +67,18 @@ fprintf('\n               Total: %9.2f %9.2f %9.2f %9.2f', ...
 fprintf('\n--------------------------------------------------------------\n');
 
 %% branch data
-print_title(PRINT_LENGTH,2,'Branch Data');
-fprintf(  '-----  ------------  ------------------  ------------------  ------------------');
-fprintf('\nBrnch   From   To    From Bus Injection   To Bus Injection     Loss (I^2 * Z)  ');
-fprintf('\n  #     Bus    Bus    P (MW)   Q (MVAr)   P (MW)   Q (MVAr)   P (MW)   Q (MVAr)');
-fprintf('\n-----  -----  -----  --------  --------  --------  --------  --------  --------');
-fprintf('\n%4d%7d%7d%10.2f%10.2f%10.2f%10.2f%10.3f%10.2f', ...
-        [   (1:NUM.Branch)', branch(:, [F_BUS, T_BUS]), ...
-            branch(:, [PF, QF]), branch(:, [PT, QT]), ...
-            real(loss), imag(loss) ...
-        ]');
-
-fprintf('\n                                                             --------  --------');
-fprintf('\n                                                    Total:%10.3f%10.2f', ...
-        sum(real(loss)), sum(imag(loss)));
-fprintf('\n-------------------------------------------------------------------------------\n');
+% print_title(PRINT_LENGTH,2,'Branch Data');
+% fprintf(  '-----  ------------  ------------------  ------------------  ------------------');
+% fprintf('\nBrnch   From   To    From Bus Injection   To Bus Injection     Loss (I^2 * Z)  ');
+% fprintf('\n  #     Bus    Bus    P (MW)   Q (MVAr)   P (MW)   Q (MVAr)   P (MW)   Q (MVAr)');
+% fprintf('\n-----  -----  -----  --------  --------  --------  --------  --------  --------');
+% fprintf('\n%4d%7d%7d%10.2f%10.2f%10.2f%10.2f%10.3f%10.2f', ...
+%         [   (1:NUM.Branch)', branch(:, [F_BUS, T_BUS]), ...
+%             branch(:, [PF, QF]), branch(:, [PT, QT]), ...
+%             real(loss), imag(loss) ...
+%         ]');
+% 
+% fprintf('\n                                                             --------  --------');
+% fprintf('\n                                                    Total:%10.3f%10.2f', ...
+%         sum(real(loss)), sum(imag(loss)));
+% fprintf('\n-------------------------------------------------------------------------------\n');

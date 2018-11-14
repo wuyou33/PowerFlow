@@ -14,84 +14,30 @@ function [ Jacobian ] = BSP_Jacobian( U,delta,G,B,Pi,Qi, PLC,NUM )  % n行m列
 %        分块,然后不同的节点分元胞数组各取所需                  
 %                   ┌ H N ┐
 %                   └ K L ┘            
-% TEMP TEST: 临时调试代码
-%% 初始化
-% 预分配内存
-J.H = zeros(NUM.Bus);
-J.N = zeros(NUM.Bus);
-J.K = zeros(NUM.Bus);
-J.L = zeros(NUM.Bus);
 %% i!=j时 非对角元素
-for i = 1 : NUM.Bus
-	for j = 1 : NUM.Bus
-		J.H(i,j) = - U(i)*U(j)*(G(i,j)*sin(delta(i)-delta(j))-B(i,j)*cos(delta(i)-delta(j)));
-	end
-end
-for i = 1 : NUM.Bus
-	for j = 1 : NUM.Bus
-		J.N(i,j) = - U(i)*U(j)*(G(i,j)*cos(delta(i)-delta(j))+B(i,j)*sin(delta(i)-delta(j)));
-	end
-end
-for i = 1 : NUM.Bus
-	for j = 1 : NUM.Bus
-		J.K(i,j) = + U(i)*U(j)*(G(i,j)*cos(delta(i)-delta(j))+B(i,j)*sin(delta(i)-delta(j)));
-	end
-end
-for i = 1 : NUM.Bus
-	for j = 1 : NUM.Bus
-		J.L(i,j) = - U(i)*U(j)*(G(i,j)*sin(delta(i)-delta(j))-B(i,j)*cos(delta(i)-delta(j)));
-	end
-end
-%% i==j时 对角元素替代了原来的无效的非对角元素
+[j,i] = meshgrid(1:NUM.Bus);
+H = - U(i).*U(j).*(G.*sin(delta(i)-delta(j))-B.*cos(delta(i)-delta(j)));
+N = - U(i).*U(j).*(G.*cos(delta(i)-delta(j))+B.*sin(delta(i)-delta(j)));
+K = + U(i).*U(j).*(G.*cos(delta(i)-delta(j))+B.*sin(delta(i)-delta(j)));
+L = - U(i).*U(j).*(G.*sin(delta(i)-delta(j))-B.*cos(delta(i)-delta(j)));
 
-for i = 1 : NUM.Bus
-	J.H(i,i) =   U(i).^2 * B(i,i) + Qi(i);
-end
-for i = 1 : NUM.Bus
-	J.N(i,i) = - U(i).^2 * G(i,i) - Pi(i);
-end
-for i = 1 : NUM.Bus
-	J.K(i,i) =   U(i).^2 * G(i,i) - Pi(i);
-end
-for i = 1 : NUM.Bus
-	J.L(i,i) =   U(i).^2 * B(i,i) - Qi(i);
-end
+%% i==j时 对角元素替代了原来的无效的非对角元素
+H(logical(eye(NUM.Bus))) =   U.^2 .* diag(B) + Qi;
+N(logical(eye(NUM.Bus))) = - U.^2 .* diag(G) - Pi;
+K(logical(eye(NUM.Bus))) =   U.^2 .* diag(G) - Pi;
+L(logical(eye(NUM.Bus))) =   U.^2 .* diag(B) - Qi;
 % -----------------------------------------至此，对每一个节点都算了其 H N K L
 % 接下来，要根据各个节点的类型，顺序重排：PQ_BUS PV_BUS
 %% HN KL 矩阵重新排序
-[J] = sort_Jacobian(J,PLC);
+H = [H( PLC.PV, : ); H( PLC.PQ, : )];
+H = [H( :, PLC.PV ), H( :, PLC.PQ )];
+N = [N( PLC.PV, PLC.PQ ); N( PLC.PQ, PLC.PQ )];
+K = [K( PLC.PQ, PLC.PV ), K( PLC.PQ, PLC.PQ )];
+L = L( PLC.PQ, PLC.PQ );
 
-Jacobian = [J.H J.N
-            J.K J.L];
+Jacobian = [H N
+            K L];
 
 end % main function: BSP_Jacobian
 
-%% sub function 1 雅可比矩阵 按照 节点类型 重排
-% function [J] = sort_Jacobian(J,PLC)
-% J.H = J.H( logical(PLC.PQ + PLC.PV), : );
-% J.H = J.H( :, logical(PLC.PQ + PLC.PV) );
-% 
-% J.N = J.N( logical(PLC.PQ + PLC.PV), : );
-% J.N = J.N( :, PLC.PQ );
-% 
-% J.K = J.K( PLC.PQ, : );
-% J.K = J.K( :, logical(PLC.PQ + PLC.PV) );
-% 
-% J.L = J.L( PLC.PQ, : );
-% J.L = J.L( :, PLC.PQ );
-% end
-% 重新排序
-function [J] = sort_Jacobian(J,PLC)
-J.H = [J.H( PLC.PV, : ); J.H( PLC.PQ, : )];
-J.H = [J.H( :, PLC.PV ), J.H( :, PLC.PQ )];
-
-J.N = [J.N( PLC.PV, : ); J.N( PLC.PQ, : )];
-J.N = J.N( :, PLC.PQ );
-
-J.K = J.K( PLC.PQ, : );
-J.K = [J.K( :, PLC.PV ), J.K( :, PLC.PQ )];
-
-J.L = J.L( PLC.PQ, : );
-J.L = J.L( :, PLC.PQ );
-end
 
