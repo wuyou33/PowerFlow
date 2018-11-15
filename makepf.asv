@@ -6,8 +6,7 @@ close all
     % ┌ ΔP ┐  _   ┌ H N ┐ ┌  Δδ  ┐
     % └ ΔQ ┘  ─   └ K L ┘ └ ΔU/U ┘ 
 %% 环境初始化
-% casedata = case2383wp;
-casedata = runpf('case2383wp');
+casedata = case2383wp;
 RUN = runpf(casedata);clc; % 用于误差比较
 addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接
 run BSP_Initial.m
@@ -97,7 +96,7 @@ for PF_N_IT = 1:PF_MAX_IT % 最大迭代次数
         break;
     end
 end % NL 大循环
-
+time = toc;
 %% 节点电压数据
 bus(:,[VM, VA]) = [U,(delta*180/pi)];  % 把电压和相角更新到bus矩阵中
 %% PV节点 功率 （只有 平衡节点 的 P和Q，PV节点 的 Q 可以变化）
@@ -152,7 +151,7 @@ gen(gen_BLC,[PG, QG]) = [real(Sn), imag(Sn)];   % 平衡节点的ΔP和ΔQ加上去
 bus(:,BUS_I) = Input_raw.bus(:,BUS_I);
 gen(:,GEN_BUS) = Input_raw.gen(:,GEN_BUS);
 branch(:,[F_BUS,T_BUS]) = Input_raw.branch(:,[F_BUS,T_BUS]);
-time = toc;
+
 %% 判断收敛性，结果打印
 BSP_print(bus,gen,NL,Type,NUM,PRINT_LENGTH,PF_N_IT,Accuracy); % 收敛性判断以及结果输出
 
