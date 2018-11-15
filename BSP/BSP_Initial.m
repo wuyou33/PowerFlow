@@ -5,7 +5,8 @@ PF_MAX_IT = 10;      % 最大迭代次数
 %% 输出控制符
 DISPLAY = 0;        % 显示中间调试过程
 UNDISPLAY = 0;      % 默认不显示的内容：导纳矩阵
-FIGURE  = 0;        % 显示图像调试过程
+FIGURE  = 1;        % 显示图像调试过程
+UNFIGURE  = 0;        % 显示图像调试过程
 PRINT_LENGTH = 78;
 ENABLE  = 1;        % gen和branch的运行状态
 DISABLE = 0;

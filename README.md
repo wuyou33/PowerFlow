@@ -16,6 +16,7 @@ Author: Kang-S <https://github.com/Kang-S>
 * 收敛之后计算各`节点的电压，功率`
 * 计算`支路功率`
 * 将除了NR迭代大循环以外的for循环全部用`矩阵运算`代替，提高运行效率，目标是**case2383wp计算时间小于0.2s**
+* 加入了`移相器`，全部`sparse化`，case2383wp收敛速度控制到了`0.02s`
 
 ## Point
 * case5  最简化版本，bus的Meg=1，Ang=0，没有变压器
