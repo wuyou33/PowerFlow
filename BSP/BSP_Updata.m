@@ -9,6 +9,6 @@ delta(PLC.PQ) = delta(PLC.PQ) + U_a(NUM.PV+1:end);
 U(PLC.PQ) = U(PLC.PQ) + U_m .* U(PLC.PQ);  % U1 = U0 + ΔU0/U0 * U0
 
 %% 将电压转化为复数的形式u = e + jf
-u = U.*cos(delta) + 1j * U.*sin(delta);
+u = U .* exp(1j*delta);
 %% 各个节点的电压状态量
 end

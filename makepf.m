@@ -6,7 +6,7 @@ close all
     % ┌ ΔP ┐  _   ┌ H N ┐ ┌  Δδ  ┐
     % └ ΔQ ┘  ─   └ K L ┘ └ ΔU/U ┘ 
 %% 环境初始化
-casedata = case2383wp;
+casedata = case300;
 addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接
 run BSP_Initial.m
 print_title(PRINT_LENGTH, 1, '正在运行 IEEE %d',NUM.Bus);
@@ -26,14 +26,14 @@ if DISPLAY  % 导纳矩阵误差值计算和显示
     print_title(PRINT_LENGTH,5,'Y误差：%e', ERR_MAX)
 %     fprintf("* 导纳矩阵最大误差值：%e\n\n", ERR_MAX);
     % 显示误差图像
-    if FIGURE
-        answ = Y - makeYbus(baseMVA, bus, branch);
-        image(abs(answ)*3*1e15);
-        colorbar;
-        title(['Different_{max} = ', num2str(ERR_MAX),'（图像3^{15}倍放大）']);
-    end
 end
 
+if FIGURE  % 显示误差图像
+    answ = Y - makeYbus(baseMVA, bus, branch);
+    image(abs(answ)*3*1e15);
+    colorbar;
+    title(['Different_{max} = ', num2str(ERR_MAX),'（图像3^{15}倍放大）']);
+end
 %% 节点注入功率 Sis = Pis + j*Qis
 [Pis,Qis] = BSP_Sis(bus,gen,NUM);
 
@@ -166,7 +166,6 @@ if FIGURE  % 误差变化曲线
     ylabel('Per-unit value');
 end
 
-% load('run.mat');
 RUN = runpf(casedata);clc;
 fprintf('幅值误差: %.3e\n',max(max(abs(bus(:,8)-RUN.bus(:,8)))));
 fprintf('相角误差: %.3e\n',max(max(abs(bus(:,9)-RUN.bus(:,9)))));

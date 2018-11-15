@@ -68,4 +68,5 @@ U = bus(:, VM);      % 母线电压 (p.u.)
 delta = pi/180 * bus(:, VA);  % 母线电压相角(弧度制：MATLAB的三角函数识别弧度制)
 NL.xInit = [delta(logical(PLC.PQ + PLC.PV)); U(PLC.PQ)]; % 组成Jacobian矩阵的x
 % 将电压转化为复数的形式u = e + jf
-u = U.*cos(delta) + 1j * U.*sin(delta);
+% u = U.*cos(delta) + 1j * U.*sin(delta);
+u = U .* exp(1j*delta);
