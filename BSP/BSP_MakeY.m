@@ -1,5 +1,5 @@
-function [Y, G, B] = BSP_MakeY(Input)
-% function [Y, G, B] = BSP_MakeY(Input)
+function [Y, G, B,Tap] = BSP_MakeY(Input)
+% function [Y, G, B,Tap] = BSP_MakeY(Input)
 %% BSP_MAKEY ¼ÆËãµ¼ÄÉ¾ØÕó  
 % OUTPUT: 
 %        Y: µ¼ÄÉ¾ØÕó (unit: p.u.)
