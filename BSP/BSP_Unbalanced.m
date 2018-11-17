@@ -8,24 +8,21 @@ function [ NL_fx,dP,dQ,Pi,Qi ] = BSP_Unbalanced( baseMVA,Pis,Qis,u,Y, PLC )
 %        baseMVA: 基准容量
 %        Pis    : 节点的 真实 总输入功率:  Pis   ( MW )
 %        Qis    : 节点的 真实 总输入功率:  Qis   (MVar)
-%        U      : 母线电压                      (p.u.)
-%        G      : Y = G + jB                   (p.u.)
-%        B      : Y = G + jB                   (p.u.)
-%        delta  : 母线电压相角                  (rad )
-%        PLC,NUM: 索引值 详见 @BSP_Initial.m
-% TEMP TEST: 临时调试代码
+%        u      : 母线电压(complex              (p.u.)
+%        Y      : 导纳矩阵                      (p.u.)
+%        PLC,NUM: 索引值 @BSP_Initial.m
+% Author: Kang-S
 
-% %% 将电压转化为复数的形式u = e + jf
-% u = U.*cos(delta) + 1j * U.*sin(delta); 
 %% 功率不平衡量
-Si = u .* conj(Y * u);
+Si = u .* conj(Y * u);  % S = U*I^{*}
 Pi = real(Si);
 Qi = imag(Si);
 dP = Pis / baseMVA - Pi;  % 计算ΔPi有功的不平衡量 (p.u.)
 dQ = Qis / baseMVA - Qi;  % 计算ΔQi无功的不平衡量 (p.u.)
 
-%% 算出 NL.fx 矩阵  input:PLC, NUM  先全是ΔP，再全是ΔQ
-% NL_fx = [dP(logical( PLC.PQ + PLC.PV)) ; dQ(PLC.PQ)]; % 排列顺序是原顺序下的ΔP ΔQ
-NL_fx = [dP(PLC.PV); dP(PLC.PQ) ; dQ(PLC.PQ)]; % 排列顺序是原顺序下的ΔP ΔQ
+%% 算出 NL.fx 矩阵 （先全是ΔP，再全是ΔQ）
+NL_fx = [dP(PLC.PV); dP(PLC.PQ) ; dQ(PLC.PQ)];  % 排列顺序是先PV节点，再PQ节点
+% NL_fx = [dP(logical( PLC.PQ + PLC.PV)) ; dQ(PLC.PQ)];  % 排列顺序是原母线顺序下的ΔP ΔQ
+
 end%func
 

@@ -1,14 +1,14 @@
 function [Y, G, B,Tap] = BSP_MakeY(Input)
-% function [Y, G, B,Tap] = BSP_MakeY(Input)
-%% BSP_MAKEY 计算导纳矩阵  
+%% BSP_MakeY 计算导纳矩阵  
 % OUTPUT: 
 %        Y: 导纳矩阵 (unit: p.u.)
 %        G: Y = G + jB
 %        B: Y = G + jB
+%        Tap: 不考虑移相器的非标准变比，与branch矩阵顺序相同（仅做了补1的工作）
 % INPUT: 
 %        Input: IEEE标准格式输入矩阵（MATPOWER 'vision2.0'）
-% TEMP TEST: 临时调试代码
-% TIP: 如果有isolate bus， 就改一下导纳矩阵就好了，暂时不考虑
+% Author: Kang-S
+
 %% 变量转化
     baseMVA = Input.baseMVA;
     bus     = Input.bus;

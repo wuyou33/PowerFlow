@@ -1,6 +1,13 @@
 function [Jacobian] = BSP_FastJacobian(Y, u, PLC)
-%% matpower: runpf -> newtonpf -> dSBus_dV函数
-% Author：Kang-S
+%% BSP_FastJacobian: 快速计算雅可比矩阵runpf -> newtonpf -> dSBus_dV
+% OUTPUT:
+%        Jacobian: 雅可比矩阵        
+% INPUT:
+%        Y      : 导纳矩阵                      (p.u.)
+%        u      : 母线电压(complex              (p.u.)
+%        PLC    : 索引值 @BSP_Initial.m
+% Author: Kang-S
+
 %% default input args
 
 n = length(u);
