@@ -17,10 +17,10 @@ BR_STATUS   = 11;   %% 支路的初始工作状态，1表示投入运行，0表示退出运行 1 - in s
 ANGMIN      = 12;   %% 支路最小相角差 angle(Vf) - angle(Vt) (degrees)
 ANGMAX      = 13;   %% 支路最大相角差 angle(Vf) - angle(Vt) (degrees)
 %% included in power flow solution, not necessarily in input
-PF          = 14;   %% real power injected at "from" bus end (MW)       (not in PTI format)
-QF          = 15;   %% reactive power injected at "from" bus end (MVAr) (not in PTI format)
-PT          = 16;   %% real power injected at "to" bus end (MW)         (not in PTI format)
-QT          = 17;   %% react    ive power injected at "to" bus end (MVAr)   (not in PTI format)
+PF          = 14;   %% 支路功率的有功功率 at "from" bus end (MW)       (not in PTI format)
+QF          = 15;   %% 支路功率的无功功率 at "from" bus end (MVAr) (not in PTI format)
+PT          = 16;   %% 支路功率的有功功率 at "to" bus end (MW)         (not in PTI format)
+QT          = 17;   %% 支路功率的无功功率 at "to" bus end (MVAr)   (not in PTI format)
 
 %% included in opf solution, not necessarily in input
 %% assume objective function has units, u

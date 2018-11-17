@@ -1,3 +1,4 @@
+% Author: Kang-S
 %% TEMP TEST: 临时调试代码
 clc
 clear
@@ -7,9 +8,9 @@ close all
     % └ ΔQ ┘  ─   └ K L ┘ └ ΔU/U ┘ 
 %% 环境初始化
 % casedata = case2383wp;
-casedata = runpf('case2383wp');
+casedata = runpf('case14');
 RUN = runpf(casedata);clc; % 用于误差比较
-addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接
+addpath ('./BSP', './Index', './Reference','./Recorde'); % 函数链接，退出程序后自动清除目录
 run BSP_Initial.m
 print_title(PRINT_LENGTH, 1, '正在运行 IEEE %d',NUM.Bus);
 
@@ -112,7 +113,7 @@ gen(gen_PV,QG) = gen(gen_PV,QG) + dS(PLC.PV, 2); % PV节点的ΔQ加上去
 %% 将电压转化为复数的形式u = e + jf
 u = U.*cos(delta) + 1j * U.*sin(delta); % 已经验证正确
 
-%% 平衡节点 功率  -- 此方法和matpower不一样
+%% 平衡节点 功率  -- 此方法case5的运算结果和matpower不一样 
 % Sn = u(PLC.BL) * sum(Y(PLC.BL,:)' .* conj(u) ) * baseMVA;
 % gen_BLC = gen(:,GEN_BUS) == bus(PLC.BL,BUS_I);  % 找到gen中BLC节点的位置（行数）
 % gen(gen_BLC,[PG, QG]) = [real(Sn), imag(Sn)];   % 平衡节点的ΔP和ΔQ加上去
@@ -126,13 +127,14 @@ delta_ij = delta.*idx_nz-delta'.*idx_nz;
 PP = U.*idx_nz.*U' .* (G.*cos(delta_ij)+B.*sin(delta_ij));
 QQ = U.*idx_nz.*U' .* (G.*sin(delta_ij)-B.*cos(delta_ij));
 Bl = branch(:, BR_B) / 2;
-% tij = sparse([branch(:,F_BUS),branch(:,T_BUS)], [branch(:,T_BUS),branch(:,F_BUS)],[k,1./k], NUM.Bus,NUM.Bus);
+
 tij = sparse([branch(:,F_BUS),branch(:,T_BUS)], [branch(:,T_BUS),branch(:,F_BUS)],[1./k,k], NUM.Bus,NUM.Bus);
 bij0 = sparse([branch(:,F_BUS),branch(:,T_BUS)], [branch(:,T_BUS),branch(:,F_BUS)], [Bl, Bl] , NUM.Bus,NUM.Bus);
 
 Pij = (PP - tij .* G .* (U.^2)) * baseMVA;
 Qij = (QQ + (tij .* B - bij0) .* (U.^2)) * baseMVA;
 Sij = Pij + 1j * Qij;
+
 %% 线路损耗 (放在了下一节中运算loss)
 %% 将 线路功率 和 损耗 封装起来
 branch(:,PF) = Pij( (pt-1) * NUM.Bus + pf ); % 列优先方式索引
@@ -142,6 +144,7 @@ branch(:,QT) = Qij( (pf-1) * NUM.Bus + pt );
 
 loss = Sij( (pt-1) * NUM.Bus + pf ) + Sij( (pf-1) * NUM.Bus + pt );
 % loss = myget_losses(baseMVA, bus, branch);  % 用matpower的方法计算loss
+
 %% --------------------------------------------------------至此，所有计算结束
 %% 恢复节点编号
 bus(:,BUS_I) = Input_raw.bus(:,BUS_I);
@@ -149,17 +152,16 @@ gen(:,GEN_BUS) = Input_raw.gen(:,GEN_BUS);
 branch(:,[F_BUS,T_BUS]) = Input_raw.branch(:,[F_BUS,T_BUS]);
 
 %% 判断收敛性，结果打印
-% BSP_print(bus,gen,NL,Type,NUM,PRINT_LENGTH,PF_N_IT,Accuracy); % 收敛性判断以及结果输出
 BSP_print(bus,gen,branch,full(loss),NL,Type,NUM,PRINT_LENGTH,PF_N_IT,Accuracy)
-%% 
+
+%% 收敛过程
 if UNFIGURE  % 误差变化曲线
     figure('Name','误差变化曲线');
     plot(draw);  % 绘制误差变化曲线
     xlabel('Time');
     ylabel('Per-unit value');
 end
-
-
+% 误差比较
 fprintf('幅值误差: %.3e\t',max(max(abs(bus(:,VM)-RUN.bus(:,VM)))));
 fprintf('相角误差: %.3e\n',max(max(abs(bus(:,VA)-RUN.bus(:,VA)))));
 fprintf('有功误差: %.3e\t',max(max(abs(gen(:,PG)-RUN.gen(:,PG)))));

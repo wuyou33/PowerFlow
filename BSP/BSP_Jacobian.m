@@ -3,17 +3,19 @@ function [ Jacobian ] = BSP_Jacobian( U,delta,G,B,Pi,Qi, PLC,NUM )  % n行m列
 % OUTPUT:
 %        Jacobian: 雅可比矩阵        
 % INPUT:
-%        U     : 节点电压幅值（迭代量） (p.u.)
-%        delta : 节点电压相角（迭代量） (rad )
-%        G     : Y = G + jB           (p.u.)
-%        B     : Y = G + jB           (p.u.)
-%        Pi    : 功率计算量Pi          (p.u.)
-%        Qi    : 功率计算量Qi          (p.u.)
-%        bus   : IEEE标准格式的 bus 矩阵数据
+%        U      : 节点电压幅值（迭代量） (p.u.)
+%        delta  : 节点电压相角（迭代量） (rad )
+%        G      : Y = G + jB           (p.u.)
+%        B      : Y = G + jB           (p.u.)
+%        Pi     : 功率计算量Pi          (p.u.)
+%        Qi     : 功率计算量Qi          (p.u.)
+%        PLC,NUM: 索引值 详见 @BSP_Initial.m
 % HELP:
 %        分块,然后不同的节点分元胞数组各取所需                  
 %                   ┌ H N ┐
-%                   └ K L ┘            
+%                   └ K L ┘    
+% Author: Kang-S
+
 %% i!=j时 非对角元素 1.4s -> 0.24s
 % tic
 % vison ------------------------------------------------------------------1

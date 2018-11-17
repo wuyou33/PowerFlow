@@ -1,4 +1,12 @@
 function [NL_x] = BSP_solve(NL,NUM_Bus)
+%% BSP_FastJacobian: 快速计算雅可比矩阵runpf -> newtonpf -> dSBus_dV
+% OUTPUT:
+%        Jacobian: 雅可比矩阵        
+% INPUT:
+%        NL      : NR法公式的参数（struct）
+%        NUM_Bus : 索引值NUM @BSP_Initial.m
+% Author: Kang-S
+%
 % 用三角分解求解线性方程组 b = A * x
 % x = NL.x
 % A = - NL.Jacobian

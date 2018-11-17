@@ -1,17 +1,19 @@
-% function BSP_print(bus,gen,NL,Type,NUM,PRINT_LENGTH,PF_N_IT,Accuracy)
 function BSP_print(bus,gen,branch,loss,NL,Type,NUM,PRINT_LENGTH,PF_N_IT,Accuracy)
-%          printpf(baseMVA, bus, gen, branch, f, success, et, fd, mpopt)
-% BSP_print: 用于打印潮流计算的结果
+% BSP_print: 用于打印潮流计算的结果 printpf(baseMVA, bus, gen, branch, f, success, et, fd, mpopt)
 % OUTPUT: 无（通过打印输出，没有输出参数）
 % INPUT：
-%       bus：IEEE格式节点矩阵
-%       gen：IEEE格式发电机矩阵
-%       NL： 牛拉法公式的参数（fx，x，Jacobian）
-%       Type： 节点种类（结构体：IEEE标准四种节点）
-%       NUM： 各种节点以及bus，gen等的数量
-%       PRINT_LENGTH： 打印标题的长度（见print_title.m）
-%       PF_N: 
-%       
+%       bus: IEEE格式节点矩阵
+%       gen: IEEE格式发电机矩阵
+%       branch: IEEE格式支路矩阵
+%       loss: 支路损耗
+%       NL: 牛拉法公式的参数（fx，x，Jacobian）
+%       Type: 节点种类（结构体：IEEE标准四种节点）
+%       NUM: 各种节点以及bus，gen等的数量
+%       PRINT_LENGTH: 打印标题的长度（见print_title.m）
+%       PF_N_IT: 迭代次数
+%       Accuracy: 收敛精度
+% Author: Kang-S
+
 %% bus、generator和branch的索引值
 [BUS_I, BUS_TYPE, PD, QD, GS, BS, BUS_AREA, VM, VA, BASE_KV, ZONE, ...
     VMAX, VMIN] = Index_bus; %bus
